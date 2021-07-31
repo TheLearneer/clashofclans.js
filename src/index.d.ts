@@ -3,6 +3,9 @@ declare module 'clashofclans.js' {
 		keys?: string[];
 		timeout?: number;
 		baseURL?: string;
+		/**
+		 * @deprecated The `token` field is considered deprecated, use `keys` instead.
+		 */
 		token?: string | string[];
 	}
 
@@ -73,7 +76,9 @@ declare module 'clashofclans.js' {
 
 		public clanMembers(clanTag: string, options?: SearchOptions): Promise<ClanMemberList>;
 
-		public detailedClanMembers(members: { tag: string }[]): Promise<Player[]>;
+		public detailedClanMembers(members: { tag: string }[], extended: true): Promise<Player<true>[]>;
+		public detailedClanMembers(members: { tag: string }[], extended: false): Promise<Player<false>[]>;
+		public detailedClanMembers(members: { tag: string }[]): Promise<Player<false>[]>;
 
 		public clanWarLog(clanTag: string, options?: SearchOptions): Promise<ClanWarLog>;
 
@@ -83,7 +88,9 @@ declare module 'clashofclans.js' {
 
 		public clanWarLeagueWar(warTag: string): Promise<ClanWar>;
 
-		public player(playerTag: string): Promise<Player>;
+		public player(playerTag: string, extended: true): Promise<Player<true>>;
+		public player(playerTag: string, extended: false): Promise<Player<false>>;
+		public player(playerTag: string): Promise<Player<false>>;
 
 		public verifyPlayerToken(playerTag: string, token: string): Promise<VerifyToken>;
 
@@ -350,7 +357,7 @@ declare module 'clashofclans.js' {
 	/**
 	 * /players/{playerTag}
 	 */
-	export interface Player {
+	export interface Player<T> {
 		name: string;
 		tag: string;
 		townHallLevel: number;
@@ -399,9 +406,9 @@ declare module 'clashofclans.js' {
 			}
 		};
 		achievements: PlayerAchievement[];
-		troops: PlayerItem[];
-		heroes: PlayerItem[];
-		spells: PlayerItem[];
+		troops: (T extends true ? ExtendedPlayerItem : PlayerItem)[];
+		heroes: (T extends true ? ExtendedPlayerItem : PlayerItem)[];
+		spells: (T extends true ? ExtendedPlayerItem : PlayerItem)[];
 		labels: {
 			id: number;
 			name: string;
@@ -434,6 +441,26 @@ declare module 'clashofclans.js' {
 		maxLevel: number;
 		superTroopIsActive?: boolean;
 		village: 'home' | 'builderBase';
+	}
+
+	export interface ExtendedPlayerItem extends PlayerItem {
+		id: number;
+		housingSpace: number;
+		originalName: string;
+		minOriginalLevel: number;
+		trainingCost: number;
+		cooldown: number;
+		boostDuration: number;
+		unlockTownHallLevel: number;
+		unlockCost: number;
+		unlockTime: number;
+		unlockResource: string;
+		unlockBuilding: string;
+		unlockBuildingLevel: number;
+		upgradeCost: number;
+		upgradeResource: string;
+		upgradeTime: number;
+		hallMaxLevel: number;
 	}
 
 	/**

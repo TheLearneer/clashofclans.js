@@ -1,5 +1,6 @@
 const { Extension } = require('../util/Extension');
 const fetch = require('node-fetch');
+const Player = require('./Player');
 const qs = require('querystring');
 
 /**
@@ -25,6 +26,13 @@ class Client {
 		this.timeout = options.timeout || 0;
 		this.keys = options.keys || options.token;
 		this.baseURL = options.baseURL || 'https://api.clashofclans.com/v1';
+
+		if (options.token) {
+			process.emitWarning(
+				'The `token` field is considered deprecated and will be removed in the next version, use `keys` instead.',
+				'DeprecationWarning'
+			);
+		}
 	}
 
 	/**
@@ -215,12 +223,15 @@ class Client {
 	/**
 	 * Get player information.
 	 * @param {string} playerTag - Tag of the player.
+	 * @param {boolean} extended - Get Extended Info.
 	 * @example
 	 * client.player('#9Q92C8R20');
 	 * @returns {Promise<Object>} Object
 	 */
-	async player(playerTag) {
-		return this.fetch(`/players/${this.encodeTag(playerTag)}`);
+	async player(playerTag, extended) {
+		const data = await this.fetch(`/players/${this.encodeTag(playerTag)}`);
+		if (data.ok && extended) return Player.parse(data);
+		return data;
 	}
 
 	/**
